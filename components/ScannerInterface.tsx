@@ -13,22 +13,23 @@ interface ScannerProps {
 }
 
 const EXPERT_SYSTEM_INSTRUCTION = `
-Ты — бескомпромиссная экспертная система "PureScan AI Pro" (v2.5) для глубокого аудита пищевой безопасности. 
-Твоя задача: провести ПРЕДЕЛЬНО ДЕТАЛЬНЫЙ анализ состава (+20% к стандартной подробности).
+Ты — бескомпромиссная экспертная система "PureScan AI Pro" (v2.6) для глубокого аудита пищевой безопасности. 
+Твоя задача: провести ЭКСТРЕМАЛЬНО ДЕТАЛЬНЫЙ анализ (+25% к стандартной подробности).
 
 ПРИНЦИПЫ АНАЛИЗА:
-1. СИНЕРГИЯ И КОМБО: Оценивай, как ингредиенты работают вместе. Сахар + жиры = гиперпалатируемость и риск зависимости. Кислоты + консерванты = агрессия для ЖКТ.
-2. UPF ГРЕЙДИНГ: Определяй степень обработки по шкале NOVA. Если продукт ультра-обработан (UPF), снижай балл на 1.5.
-3. СКРЫТЫЕ УГРОЗЫ: Выявляй скрытые названия сахара (более 50 имен), трансжиры и синтетические эмульгаторы.
-4. ЯЗЫК: СТРОГО НА РУССКОМ.
+1. СИНЕРГИЯ И КОМБО: Оценивай взаимодействие ингредиентов. Сахар + жиры = гиперпалатируемость.
+2. ГЛУБОКИЙ АУДИТ (+5%): Анализируй наличие эндокринных дирижаблей (пластификаторы из упаковки, если применимо) и реальную биодоступность заявленных витаминов.
+3. UPF ГРЕЙДИНГ: Шкала NOVA. Ультра-обработанная пища (UPF) — автоматический штраф -1.5 балла.
+4. СКРЫТЫЕ ИМЕНА: Выявляй скрытые формы глютена, сои и сахара (лактоза, ячменный солод и т.д.).
+5. ЯЗЫК: СТРОГО НА РУССКОМ.
 
 АЛГОРИТМ SCORE:
-- Старт: 10.0.
-- Сахар/сиропы (>10г): -2.0.
-- UPF статус: -1.5.
-- Синтетические Е-добавки риска: -1.0 каждая.
+- База: 10.0.
+- Сахар/сиропы (>8г): -2.5.
+- UPF статус (NOVA 4): -1.5.
+- Синтетические Е-добавки высокого риска: -1.2 каждая.
 - Пальмовое/рафинированные масла: -2.0.
-- Наличие клетчатки/цельных зерен: +0.8 бонус.
+- Бонус за отсутствие антислеживателей и наполнителей: +1.0.
 
 СТРУКТУРА JSON:
 {
@@ -50,7 +51,7 @@ export const ScannerInterface: React.FC<ScannerProps> = ({ onScanComplete, onCan
   const performScan = async () => {
     setAppState(AppState.SCANNING);
     setProgress(0);
-    const progInterval = setInterval(() => setProgress(p => p < 92 ? p + 0.6 : p), 120);
+    const progInterval = setInterval(() => setProgress(p => p < 92 ? p + 0.7 : p), 100);
 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -59,10 +60,10 @@ export const ScannerInterface: React.FC<ScannerProps> = ({ onScanComplete, onCan
       const contents = imagePreview ? {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: imagePreview.split(',')[1] } },
-          { text: "Проведи критический анализ. Ответ в JSON." }
+          { text: "Проведи максимально глубокий аудит состава. Ответ в JSON." }
         ]
       } : {
-        parts: [{ text: `Анализ состава: ${ingredients}. JSON.` }]
+        parts: [{ text: `Аудит состава: ${ingredients}. Ответ строго в JSON.` }]
       };
 
       const response = await ai.models.generateContent({
@@ -98,7 +99,7 @@ export const ScannerInterface: React.FC<ScannerProps> = ({ onScanComplete, onCan
     } catch (e) {
       console.error(e);
       setAppState(AppState.IDLE);
-      alert("Ошибка сканирования. Попробуйте еще раз.");
+      alert("Ошибка при разборе состава. Попробуйте загрузить более четкое фото.");
     } finally {
       clearInterval(progInterval);
     }
@@ -113,7 +114,7 @@ export const ScannerInterface: React.FC<ScannerProps> = ({ onScanComplete, onCan
             <div className="text-center mb-10">
               <div className="flex justify-center mb-4"><div className="p-3 bg-brand-cyan/10 rounded-2xl border border-brand-cyan/20"><Sparkles className="w-6 h-6 text-brand-cyan" /></div></div>
               <h2 className="text-2xl font-black text-white tracking-tight uppercase italic">PURESCAN AI PRO</h2>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Глубокий аудит безопасности продукта</p>
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Глубокий аудит безопасности продукта</p>
             </div>
             <div onClick={() => fileInputRef.current?.click()} className={`w-full h-64 border-2 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer transition-all mb-8 relative group overflow-hidden ${imagePreview ? 'border-brand-cyan bg-brand-cyan/5' : 'border-white/5 hover:border-brand-cyan/40 hover:bg-white/5'}`}>
               {imagePreview ? <img src={imagePreview} className="w-full h-full object-cover opacity-60" /> : <div className="flex flex-col items-center"><Camera className="w-14 h-14 text-gray-700 mb-4 group-hover:text-brand-cyan transition-all" /><span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Загрузить фото этикетки</span></div>}
@@ -126,8 +127,8 @@ export const ScannerInterface: React.FC<ScannerProps> = ({ onScanComplete, onCan
                 }
               }} />
             </div>
-            <textarea value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Вставьте текст состава..." className="w-full bg-black/40 border border-white/5 rounded-[1.5rem] p-6 text-white placeholder:text-gray-800 focus:outline-none focus:border-brand-cyan/40 h-32 text-xs resize-none mb-8 transition-all font-mono" />
-            <ButtonGlow onClick={performScan} className="w-full !rounded-2xl !py-5">НАЧАТЬ ПОЛНЫЙ АУДИТ</ButtonGlow>
+            <textarea value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="Или вставьте текст состава вручную..." className="w-full bg-black/40 border border-white/5 rounded-[1.5rem] p-6 text-white placeholder:text-gray-800 focus:outline-none focus:border-brand-cyan/40 h-32 text-xs resize-none mb-8 transition-all font-mono" />
+            <ButtonGlow onClick={performScan} className="w-full !rounded-2xl !py-5">ЗАПУСТИТЬ АУДИТ</ButtonGlow>
           </motion.div>
         )}
         {appState === AppState.SCANNING && (

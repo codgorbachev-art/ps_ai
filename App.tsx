@@ -149,7 +149,7 @@ export default function App() {
       case 'SCAN': return wrap(<ScannerInterface history={history} onScanComplete={handleScanComplete} onCancel={() => setView(user ? 'DASHBOARD' : 'LANDING')} />);
       case 'RESULT': return scanResult ? wrap(<ResultView result={scanResult} onBack={() => setView(user ? 'DASHBOARD' : 'LANDING')} onScanNew={() => setView('SCAN')} />) : null;
       case 'SUBSCRIPTION': return wrap(<SubscriptionView currentPlan={user?.plan || 'FREE'} onUpgrade={handleUpgrade} />);
-      case 'PROFILE': return wrap(<ProfileView user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />);
+      case 'PROFILE': return user ? wrap(<ProfileView user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />) : null;
       default: return null;
     }
   };
@@ -158,14 +158,9 @@ export default function App() {
     <main className="relative min-h-screen w-full overflow-x-hidden font-sans selection:bg-brand-cyan/30 bg-[#050505]">
       <GlowBackground />
       
-      {/* 
-        PREMIUM GLASS HEADER
-        Refactored with advanced glass effects, gradients and hover interactions
-      */}
       <header className="sticky top-6 z-50 px-4 transition-all duration-300 mb-12 flex justify-center">
         <div className="w-full max-w-5xl">
           <div className="glass-panel rounded-full px-6 md:px-10 py-3.5 flex items-center justify-between backdrop-blur-[40px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] border-white/10 border-[0.5px]">
-            {/* Logo Section */}
             <motion.div 
               whileHover={{ scale: 1.02 }}
               className="flex items-center gap-4 cursor-pointer group" 
